@@ -1,6 +1,6 @@
 use quote::ToTokens;
-use syn::Error;
 use std::fmt::Display;
+use syn::Error;
 
 pub struct Ctxt {
     errors: Vec<Error>,
@@ -8,9 +8,7 @@ pub struct Ctxt {
 
 impl Ctxt {
     pub fn new() -> Self {
-        Self {
-            errors: vec![],
-        }
+        Self { errors: vec![] }
     }
 
     pub fn push_spanned<T: ToTokens, U: Display>(&mut self, tokens: T, message: U) {

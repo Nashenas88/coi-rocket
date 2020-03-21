@@ -127,6 +127,7 @@ fn main() {
     };
 
     Rocket::ignite()
+        // Don't forget to manage the container so it can be used!
         .manage(container)
         .mount("/", routes![get])
         .launch();

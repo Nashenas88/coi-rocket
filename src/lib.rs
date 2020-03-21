@@ -64,7 +64,8 @@ where
             Outcome::Failure(f) => return Outcome::Failure(f),
             Outcome::Forward(f) => return Outcome::Forward(f),
         };
-        container.0
+        container
+            .0
             .resolve::<T>(<K as ContainerKey<T>>::KEY)
             .map(Injected::new)
             .map_err(Error::Coi)

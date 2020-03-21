@@ -3,7 +3,11 @@
 //! [`coi-rocket`]: https://docs.rs/coi-rocket
 
 extern crate proc_macro;
-use crate::{attr::Inject, ctxt::Ctxt, symbols::{ARC, INJECT}};
+use crate::{
+    attr::Inject,
+    ctxt::Ctxt,
+    symbols::{ARC, INJECT},
+};
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::{
@@ -48,10 +52,11 @@ fn get_arc_ty(ty: &Type, type_path: &TypePath) -> Result<Type> {
 /// ## Examples
 /// ```rust,no_run
 /// #![feature(decl_macro)]
-/// 
+///
 /// use coi::Inject;
 /// use coi_rocket::inject;
 /// use rocket::get;
+/// use std::sync::Arc;
 ///
 /// # trait IService : Inject {}
 ///
@@ -79,12 +84,13 @@ pub fn inject(attr: TokenStream, input: TokenStream) -> TokenStream {
                 arg.attrs.retain(|attr| attr.path != INJECT);
                 let key: Ident = if let Pat::Ident(pat_ident) = &*arg.pat {
                     let ident = &pat_ident.ident;
-                    parse_quote!{ #ident }
+                    parse_quote! { #ident }
                 } else {
                     ctxt.push_spanned(&*arg.pat, "patterns cannot be injected");
                     continue;
                 };
 
+                let arc_ty = &*arg.ty;
                 let ty = if let Type::Path(type_path) = &*arg.ty {
                     match get_arc_ty(&*arg.ty, type_path) {
                         Ok(ty) => ty,
@@ -109,12 +115,15 @@ pub fn inject(attr: TokenStream, input: TokenStream) -> TokenStream {
                 });
 
                 stmts.push(parse_quote!( let #cr::Injected(#key, _) = #key; ));
-                *arg.ty = parse_quote!( #cr::Injected<::std::sync::Arc<#ty>, #ident> );
+                *arg.ty = parse_quote!( #cr::Injected<#arc_ty, #ident> );
             }
         }
     }
 
-    input.block.stmts = stmts.into_iter().chain(input.block.stmts.into_iter()).collect();
+    input.block.stmts = stmts
+        .into_iter()
+        .chain(input.block.stmts.into_iter())
+        .collect();
 
     if let Err(e) = ctxt.check() {
         let compile_errors = e.iter().map(Error::to_compile_error);
