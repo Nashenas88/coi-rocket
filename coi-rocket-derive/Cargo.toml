@@ -1,0 +1,22 @@
+[package]
+name = "coi-rocket-derive"
+version = "0.1.0"
+authors = ["Paul Daniel Faria <Nashenas88@users.noreply.github.com>"]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Nashenas88/coi-rocket"
+description = "Provides derives for coi-rocket"
+readme = "README.md"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "1.0", features = ["full"] }
+quote = "1.0"
+proc-macro2 = "1.0"
+
+[dev-dependencies]
+coi = { version = "0.9.2" }
+coi-rocket = { path = ".." }
+rocket = "0.4.4"

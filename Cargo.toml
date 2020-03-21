@@ -1,0 +1,20 @@
+[package]
+name = "coi-rocket"
+version = "0.1.0"
+authors = ["Paul Daniel Faria <Nashenas88@users.noreply.github.com>"]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Nashenas88/coi-rocket"
+description = "coi-rocket provides integration support between coi and rocket"
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+coi = "0.9.2"
+coi-rocket-derive = { path = "coi-rocket-derive", version = "0.1.0" }
+rocket = "0.4.4"
+
+[features]
+default = []
+debug = ["coi/debug"]
