@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use coi::{Container, Inject};
 use rocket::{
     http::Status,
@@ -37,31 +38,34 @@ pub enum Error {
 
 // For every request that needs a container, create a scoped container that lives
 // for the duration of that request.
-impl<'a, 'r> FromRequest<'a, 'r> for &'a ScopedContainer {
+#[async_trait]
+impl<'r> FromRequest<'r> for &'r ScopedContainer {
     type Error = Error;
 
-    fn from_request(req: &'a Request<'r>) -> Outcome<&'a ScopedContainer, Error> {
-        req.local_cache(|| {
-            let container = req.guard::<State<Container>>().succeeded()?;
+    async fn from_request(req: &'r Request<'_>) -> Outcome<&'r ScopedContainer, Error> {
+        req.local_cache_async::<Option<ScopedContainer>, _>(async move {
+            let container = req.guard::<&State<Container>>().await.succeeded()?;
             Some(ScopedContainer(container.scoped()))
         })
+        .await
         .as_ref()
-        .into_outcome((Status::InternalServerError, Error::MissingContainer))
+        .or_error((Status::InternalServerError, Error::MissingContainer))
     }
 }
 
 // For every injected param, just us the local cached scoped container
-impl<'a, 'r, T, K> FromRequest<'a, 'r> for Injected<Arc<T>, K>
+#[async_trait]
+impl<'r, T, K> FromRequest<'r> for Injected<Arc<T>, K>
 where
     T: Inject + ?Sized,
     K: ContainerKey<T>,
 {
     type Error = Error;
 
-    fn from_request(req: &'a Request<'r>) -> Outcome<Injected<Arc<T>, K>, Error> {
-        let container = match req.guard::<&ScopedContainer>() {
+    async fn from_request(req: &'r Request<'_>) -> Outcome<Injected<Arc<T>, K>, Error> {
+        let container = match req.guard::<&ScopedContainer>().await {
             Outcome::Success(container) => container,
-            Outcome::Failure(f) => return Outcome::Failure(f),
+            Outcome::Error(f) => return Outcome::Error(f),
             Outcome::Forward(f) => return Outcome::Forward(f),
         };
         container
@@ -69,6 +73,6 @@ where
             .resolve::<T>(<K as ContainerKey<T>>::KEY)
             .map(Injected::new)
             .map_err(Error::Coi)
-            .into_outcome(Status::InternalServerError)
+            .or_error(Status::InternalServerError)
     }
 }
