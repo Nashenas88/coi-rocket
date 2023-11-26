@@ -13,8 +13,6 @@ retrieving your dependencies from a `Container` registered with `rocket`.
 ## Example
 
 ```rust,no_run
-#![feature(decl_macro, proc_macro_hygiene)]
-
 // What's needed for the example fn below
 use rocket::get;
 use rocket_contrib::json::Json;
@@ -115,7 +113,8 @@ impl IRepo for RepoImpl {
     }
 }
 
-fn main() {
+#[launch]
+fn rocket() -> _ {
     use rocket::{routes, Rocket};
     use coi::container;
 
@@ -126,11 +125,10 @@ fn main() {
         service => ServiceImplProvider; scoped
     };
 
-    Rocket::ignite()
+    Rocket::build()
         // Don't forget to manage the container so it can be used!
         .manage(container)
         .mount("/", routes![get])
-        .launch();
 }
 ```
 
