@@ -80,8 +80,8 @@ pub fn inject(attr: TokenStream, input: TokenStream) -> TokenStream {
     let mut ctxt = Ctxt::new();
     for arg in &mut sig.inputs {
         if let FnArg::Typed(arg) = arg {
-            if arg.attrs.iter().any(|attr| attr.path == INJECT) {
-                arg.attrs.retain(|attr| attr.path != INJECT);
+            if arg.attrs.iter().any(|attr| attr.path() == INJECT) {
+                arg.attrs.retain(|attr| attr.path() != INJECT);
                 let key: Ident = if let Pat::Ident(pat_ident) = &*arg.pat {
                     let ident = &pat_ident.ident;
                     parse_quote! { #ident }
@@ -92,7 +92,7 @@ pub fn inject(attr: TokenStream, input: TokenStream) -> TokenStream {
 
                 let arc_ty = &*arg.ty;
                 let ty = if let Type::Path(type_path) = &*arg.ty {
-                    match get_arc_ty(&*arg.ty, type_path) {
+                    match get_arc_ty(&arg.ty, type_path) {
                         Ok(ty) => ty,
                         Err(e) => {
                             ctxt.push_spanned(&*arg.ty, e);
@@ -120,10 +120,7 @@ pub fn inject(attr: TokenStream, input: TokenStream) -> TokenStream {
         }
     }
 
-    input.block.stmts = stmts
-        .into_iter()
-        .chain(input.block.stmts.into_iter())
-        .collect();
+    input.block.stmts = stmts.into_iter().chain(input.block.stmts).collect();
 
     if let Err(e) = ctxt.check() {
         let compile_errors = e.iter().map(Error::to_compile_error);
