@@ -14,8 +14,8 @@ retrieving your dependencies from a `Container` registered with `rocket`.
 
 ```rust,no_run
 // What's needed for the example fn below
-use rocket::get;
-use rocket_contrib::json::Json;
+use rocket::{get, launch};
+use rocket::serde::json::Json;
 use std::sync::Arc;
 
 // Add the `inject` attribute to the function you want to inject

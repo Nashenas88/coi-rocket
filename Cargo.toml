@@ -1,6 +1,6 @@
 [package]
 name = "coi-rocket"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Paul Daniel Faria <Nashenas88@users.noreply.github.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -12,8 +12,8 @@ readme = "README.md"
 
 [dependencies]
 async-trait = "0.1.74"
-coi = "0.10.2"
-coi-rocket-derive = { path = "coi-rocket-derive", version = "0.2.0" }
+coi = "0.10.3"
+coi-rocket-derive = { path = "coi-rocket-derive", version = "0.2.1" }
 rocket = "0.5.0"
 
 [features]
